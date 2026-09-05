@@ -301,6 +301,16 @@ RETURN ONLY A VALID JSON OBJECT WITH THIS EXACT SCHEMA:
   return parsed;
 }
 
+function stripAsterisks(text: string): string {
+  // Remove markdown bold/italic asterisks and bullet asterisks
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1') // remove **bold** -> bold
+    .replace(/\*(.*?)\*/g, '$1')     // remove *italic* -> italic
+    .replace(/^\s*\*\s+/gm, '- ')    // convert leading * bullets to clean -
+    .replace(/\*/g, '')              // strip any remaining lone asterisks
+    .trim();
+}
+
 export async function chatWithCoach(
   userMessage: string,
   profile?: UserProfile,
@@ -335,12 +345,13 @@ USER'S QUESTION:
 
 RULES FOR YOUR RESPONSE:
 1. Use PLAIN, SIMPLE, EVERYDAY ENGLISH that anyone can understand immediately.
-2. Avoid difficult scientific or medical jargon. Keep all explanations simple and clear.
-3. Keep your reply direct, helpful, and concise (not too long).
-4. Use neat bullet points and bold highlights to make key points easy to read.
+2. DO NOT USE ASTERISKS (*) ANYWHERE in your reply. Never use * for lists, and never use ** for bolding. Use plain text or simple dashes (-) or numbers (1, 2, 3) for lists.
+3. Avoid difficult scientific or medical jargon. Keep all explanations simple and clear.
+4. Keep your reply direct, helpful, and concise.
 5. If asked about food swaps (like egg or milk alternatives), give 2 to 3 simple everyday choices with easy portion amounts.
 6. Keep the tone friendly, motivating, and positive.
 `;
 
-  return await generateWithFallback(prompt, false);
+  const rawReply = await generateWithFallback(prompt, false);
+  return stripAsterisks(rawReply);
 }

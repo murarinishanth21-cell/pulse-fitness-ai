@@ -24,13 +24,13 @@ const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: 'msg-init-1',
     role: 'assistant',
-    content: `👋 Hello! I am **PulseAI**, your personal fitness and nutrition coach.
+    content: `👋 Hello! I am PulseAI, your personal fitness and nutrition coach.
 
 How can I help you today? You can ask me for:
-- Food substitutions (e.g., *"What can I substitute for eggs in breakfast?"*)
+- Food substitutions (e.g. "What can I eat instead of eggs for breakfast?")
 - Quick workout adjustments or form cues
-- Optimal protein timing and recovery advice
-- Daily water and electrolyte targets`,
+- Good protein timing and recovery advice
+- Daily water and hydration targets`,
     timestamp: 'Just now',
   },
 ];
