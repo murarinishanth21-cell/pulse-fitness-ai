@@ -20,6 +20,8 @@ import { generateWorkoutAction } from '@/app/actions/fitnessActions';
 
 interface WorkoutPlannerProps {
   profile: UserProfile;
+  workout: WorkoutRoutine | null;
+  onSaveWorkout: (routine: WorkoutRoutine) => void;
   onSyncToSchedule: (exercises: ExerciseItem[]) => void;
   onOpenProfile: () => void;
 }
@@ -42,13 +44,14 @@ const EQUIPMENT_OPTIONS = [
 
 export const WorkoutPlanner: React.FC<WorkoutPlannerProps> = ({
   profile,
+  workout,
+  onSaveWorkout,
   onSyncToSchedule,
   onOpenProfile,
 }) => {
   const [selectedSplit, setSelectedSplit] = useState(SPLIT_OPTIONS[0]);
   const [selectedEquipment, setSelectedEquipment] = useState(EQUIPMENT_OPTIONS[0]);
   const [loading, setLoading] = useState(false);
-  const [workout, setWorkout] = useState<WorkoutRoutine | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [syncSuccess, setSyncSuccess] = useState(false);
 
@@ -61,7 +64,7 @@ export const WorkoutPlanner: React.FC<WorkoutPlannerProps> = ({
     setLoading(false);
 
     if (response.success && response.data) {
-      setWorkout(response.data);
+      onSaveWorkout(response.data);
     } else {
       setErrorMsg(response.error || 'Failed to generate workout. Check your Gemini API key in .env.local');
     }

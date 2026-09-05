@@ -17,10 +17,13 @@ import { chatCoachAction } from '@/app/actions/fitnessActions';
 
 interface AiChatCoachProps {
   profile: UserProfile;
+  messages: ChatMessage[];
+  onSaveMessages: (messages: ChatMessage[]) => void;
+  onClearMessages: () => void;
   onOpenProfile: () => void;
 }
 
-const INITIAL_MESSAGES: ChatMessage[] = [
+export const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: 'msg-init-1',
     role: 'assistant',
@@ -43,11 +46,18 @@ const SUGGESTED_QUESTIONS = [
   'How can I lose fat without feeling hungry all day?',
 ];
 
-export const AiChatCoach: React.FC<AiChatCoachProps> = ({ profile, onOpenProfile }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
+export const AiChatCoach: React.FC<AiChatCoachProps> = ({
+  profile,
+  messages,
+  onSaveMessages,
+  onClearMessages,
+  onOpenProfile,
+}) => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const activeMessages = messages && messages.length > 0 ? messages : INITIAL_MESSAGES;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -55,7 +65,7 @@ export const AiChatCoach: React.FC<AiChatCoachProps> = ({ profile, onOpenProfile
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, loading]);
+  }, [activeMessages, loading]);
 
   const handleSend = async (textToSend?: string) => {
     const text = (textToSend || input).trim();
@@ -68,8 +78,8 @@ export const AiChatCoach: React.FC<AiChatCoachProps> = ({ profile, onOpenProfile
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    const updatedHistory = [...messages, userMessage];
-    setMessages(updatedHistory);
+    const updatedHistory = [...activeMessages, userMessage];
+    onSaveMessages(updatedHistory);
     setInput('');
     setLoading(true);
 
@@ -87,7 +97,7 @@ export const AiChatCoach: React.FC<AiChatCoachProps> = ({ profile, onOpenProfile
         content: response.data,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
-      setMessages((prev) => [...prev, assistantMessage]);
+      onSaveMessages([...updatedHistory, assistantMessage]);
     } else {
       const errorMessage: ChatMessage = {
         id: `err-${Date.now()}`,
@@ -95,12 +105,12 @@ export const AiChatCoach: React.FC<AiChatCoachProps> = ({ profile, onOpenProfile
         content: `⚠️ ${response.error || 'Sorry, I could not generate a response. Please verify your GEMINI_API_KEY in .env.local.'}`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      onSaveMessages([...updatedHistory, errorMessage]);
     }
   };
 
   const handleClear = () => {
-    setMessages(INITIAL_MESSAGES);
+    onClearMessages();
   };
 
   return (

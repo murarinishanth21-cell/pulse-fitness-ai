@@ -1,4 +1,11 @@
-import { UserProfile, ExerciseItem, DailyMealPlan, DietAnalysisResult } from '@/types/fitness';
+import {
+  UserProfile,
+  ExerciseItem,
+  DailyMealPlan,
+  DietAnalysisResult,
+  WorkoutRoutine,
+  ChatMessage,
+} from '@/types/fitness';
 
 const STORAGE_KEYS = {
   PROFILE: 'pulse_fitness_profile_v1',
@@ -6,7 +13,10 @@ const STORAGE_KEYS = {
   COMPLETED_DATES: 'pulse_completed_dates_v1',
   SAVED_MEAL_PLAN: 'pulse_saved_meal_plan_v1',
   LATEST_DIET_ANALYSIS: 'pulse_latest_diet_analysis_v1',
-  STREAK_COUNT: 'pulse_streak_count_v1',
+  SAVED_WORKOUT_ROUTINE: 'pulse_saved_workout_routine_v1',
+  CHAT_MESSAGES: 'pulse_chat_messages_v1',
+  ACTIVE_TAB: 'pulse_active_tab_v1',
+  DIET_INPUT_DRAFT: 'pulse_diet_input_draft_v1',
 };
 
 export const DEFAULT_PROFILE: UserProfile = {
@@ -147,5 +157,92 @@ export function saveStoredDietAnalysis(analysis: DietAnalysisResult): void {
     localStorage.setItem(STORAGE_KEYS.LATEST_DIET_ANALYSIS, JSON.stringify(analysis));
   } catch (e) {
     console.error('Error saving diet analysis', e);
+  }
+}
+
+export function getStoredWorkoutRoutine(): WorkoutRoutine | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.SAVED_WORKOUT_ROUTINE);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveStoredWorkoutRoutine(routine: WorkoutRoutine): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEYS.SAVED_WORKOUT_ROUTINE, JSON.stringify(routine));
+  } catch (e) {
+    console.error('Error saving workout routine', e);
+  }
+}
+
+export function getStoredChatMessages(): ChatMessage[] | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.CHAT_MESSAGES);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveStoredChatMessages(messages: ChatMessage[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEYS.CHAT_MESSAGES, JSON.stringify(messages));
+  } catch (e) {
+    console.error('Error saving chat messages', e);
+  }
+}
+
+export function clearStoredChatMessages(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES);
+  } catch (e) {
+    console.error('Error clearing chat messages', e);
+  }
+}
+
+export function getStoredActiveTab(): 'dashboard' | 'schedule' | 'diet' | 'meals' | 'workouts' | 'chat' {
+  if (typeof window === 'undefined') return 'dashboard';
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB);
+    if (raw && ['dashboard', 'schedule', 'diet', 'meals', 'workouts', 'chat'].includes(raw)) {
+      return raw as 'dashboard' | 'schedule' | 'diet' | 'meals' | 'workouts' | 'chat';
+    }
+    return 'dashboard';
+  } catch {
+    return 'dashboard';
+  }
+}
+
+export function saveStoredActiveTab(tab: 'dashboard' | 'schedule' | 'diet' | 'meals' | 'workouts' | 'chat'): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, tab);
+  } catch (e) {
+    console.error('Error saving active tab', e);
+  }
+}
+
+export function getStoredDietInputDraft(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem(STORAGE_KEYS.DIET_INPUT_DRAFT);
+  } catch {
+    return null;
+  }
+}
+
+export function saveStoredDietInputDraft(draft: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEYS.DIET_INPUT_DRAFT, draft);
+  } catch (e) {
+    console.error('Error saving diet draft', e);
   }
 }

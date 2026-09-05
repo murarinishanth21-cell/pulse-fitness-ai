@@ -20,6 +20,8 @@ import { analyzeDietAction } from '@/app/actions/fitnessActions';
 interface DietAnalyzerProps {
   profile: UserProfile;
   latestAnalysis: DietAnalysisResult | null;
+  dietDraft?: string;
+  onSaveDietDraft?: (draft: string) => void;
   onSaveAnalysis: (result: DietAnalysisResult) => void;
   onNavigateToMealPlan: () => void;
   onOpenProfile: () => void;
@@ -28,13 +30,20 @@ interface DietAnalyzerProps {
 export const DietAnalyzer: React.FC<DietAnalyzerProps> = ({
   profile,
   latestAnalysis,
+  dietDraft,
+  onSaveDietDraft,
   onSaveAnalysis,
   onNavigateToMealPlan,
   onOpenProfile,
 }) => {
-  const [currentDietInput, setCurrentDietInput] = useState(profile.currentDiet);
+  const [currentDietInput, setCurrentDietInput] = useState(dietDraft || profile.currentDiet);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleInputChange = (val: string) => {
+    setCurrentDietInput(val);
+    if (onSaveDietDraft) onSaveDietDraft(val);
+  };
 
   const handleAnalyze = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -110,7 +119,7 @@ export const DietAnalyzer: React.FC<DietAnalyzerProps> = ({
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setCurrentDietInput(preset.text)}
+                    onClick={() => handleInputChange(preset.text)}
                     className="text-[11px] px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-emerald-300 border border-zinc-800 transition-all hidden sm:inline-block"
                   >
                     {preset.label.split(' ')[0]}
@@ -122,7 +131,7 @@ export const DietAnalyzer: React.FC<DietAnalyzerProps> = ({
             <textarea
               rows={3}
               value={currentDietInput}
-              onChange={(e) => setCurrentDietInput(e.target.value)}
+              onChange={(e) => handleInputChange(e.target.value)}
               placeholder="e.g. 2 eggs on toast for breakfast, skipped lunch, large bowl of pasta with cheese for dinner..."
               className="w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 text-sm text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none transition-colors resize-none"
               required

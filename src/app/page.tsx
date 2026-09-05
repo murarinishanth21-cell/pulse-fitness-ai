@@ -9,12 +9,14 @@ import { TodaySchedule } from '@/components/TodaySchedule';
 import { DietAnalyzer } from '@/components/DietAnalyzer';
 import { MealPlanView } from '@/components/MealPlanView';
 import { WorkoutPlanner } from '@/components/WorkoutPlanner';
-import { AiChatCoach } from '@/components/AiChatCoach';
+import { AiChatCoach, INITIAL_MESSAGES } from '@/components/AiChatCoach';
 import {
   UserProfile,
   ExerciseItem,
   DailyMealPlan,
   DietAnalysisResult,
+  WorkoutRoutine,
+  ChatMessage,
 } from '@/types/fitness';
 import {
   DEFAULT_PROFILE,
@@ -27,29 +29,56 @@ import {
   saveStoredMealPlan,
   getStoredDietAnalysis,
   saveStoredDietAnalysis,
+  getStoredWorkoutRoutine,
+  saveStoredWorkoutRoutine,
+  getStoredChatMessages,
+  saveStoredChatMessages,
+  clearStoredChatMessages,
+  getStoredActiveTab,
+  saveStoredActiveTab,
+  getStoredDietInputDraft,
+  saveStoredDietInputDraft,
 } from '@/lib/storage';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'schedule' | 'diet' | 'meals' | 'workouts' | 'chat'>('dashboard');
+  const [activeTab, setActiveTabState] = useState<'dashboard' | 'schedule' | 'diet' | 'meals' | 'workouts' | 'chat'>('dashboard');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  // State with safe localStorage defaults
+  // States initialized with safe localStorage defaults
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
   const [schedule, setSchedule] = useState<ExerciseItem[]>(DEFAULT_SCHEDULE);
   const [mealPlan, setMealPlan] = useState<DailyMealPlan | null>(null);
   const [dietAnalysis, setDietAnalysis] = useState<DietAnalysisResult | null>(null);
-  const [isClientLoaded, setIsClientLoaded] = useState(false);
+  const [workoutRoutine, setWorkoutRoutine] = useState<WorkoutRoutine | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
+  const [dietDraft, setDietDraft] = useState<string>('');
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from local storage on mount
+  // Load everything from browser localStorage on first mount
   useEffect(() => {
+    setActiveTabState(getStoredActiveTab());
     setProfile(getStoredProfile());
     setSchedule(getStoredSchedule());
     setMealPlan(getStoredMealPlan());
     setDietAnalysis(getStoredDietAnalysis());
-    setIsClientLoaded(true);
+    setWorkoutRoutine(getStoredWorkoutRoutine());
+    const storedChat = getStoredChatMessages();
+    if (storedChat && storedChat.length > 0) {
+      setChatMessages(storedChat);
+    }
+    const storedDraft = getStoredDietInputDraft();
+    if (storedDraft) {
+      setDietDraft(storedDraft);
+    }
+    setIsLoaded(true);
   }, []);
 
-  // Handlers
+  // Handlers with automatic persistent saving to localStorage
+  const setActiveTab = (tab: 'dashboard' | 'schedule' | 'diet' | 'meals' | 'workouts' | 'chat') => {
+    setActiveTabState(tab);
+    saveStoredActiveTab(tab);
+  };
+
   const handleSaveProfile = (updated: UserProfile) => {
     setProfile(updated);
     saveStoredProfile(updated);
@@ -89,6 +118,11 @@ export default function Home() {
     });
   };
 
+  const handleSaveWorkout = (routine: WorkoutRoutine) => {
+    setWorkoutRoutine(routine);
+    saveStoredWorkoutRoutine(routine);
+  };
+
   const handleSyncWorkoutToSchedule = (exercises: ExerciseItem[]) => {
     setSchedule(exercises);
     saveStoredSchedule(exercises);
@@ -103,6 +137,21 @@ export default function Home() {
   const handleSaveDietAnalysis = (analysis: DietAnalysisResult) => {
     setDietAnalysis(analysis);
     saveStoredDietAnalysis(analysis);
+  };
+
+  const handleSaveChatMessages = (messages: ChatMessage[]) => {
+    setChatMessages(messages);
+    saveStoredChatMessages(messages);
+  };
+
+  const handleClearChatMessages = () => {
+    setChatMessages(INITIAL_MESSAGES);
+    clearStoredChatMessages();
+  };
+
+  const handleSaveDietDraft = (draft: string) => {
+    setDietDraft(draft);
+    saveStoredDietInputDraft(draft);
   };
 
   const completedCount = schedule.filter((e) => e.completed).length;
@@ -171,6 +220,8 @@ export default function Home() {
               <DietAnalyzer
                 profile={profile}
                 latestAnalysis={dietAnalysis}
+                dietDraft={dietDraft}
+                onSaveDietDraft={handleSaveDietDraft}
                 onSaveAnalysis={handleSaveDietAnalysis}
                 onNavigateToMealPlan={() => setActiveTab('meals')}
                 onOpenProfile={() => setIsProfileOpen(true)}
@@ -205,6 +256,8 @@ export default function Home() {
             >
               <WorkoutPlanner
                 profile={profile}
+                workout={workoutRoutine}
+                onSaveWorkout={handleSaveWorkout}
                 onSyncToSchedule={handleSyncWorkoutToSchedule}
                 onOpenProfile={() => setIsProfileOpen(true)}
               />
@@ -221,6 +274,9 @@ export default function Home() {
             >
               <AiChatCoach
                 profile={profile}
+                messages={chatMessages}
+                onSaveMessages={handleSaveChatMessages}
+                onClearMessages={handleClearChatMessages}
                 onOpenProfile={() => setIsProfileOpen(true)}
               />
             </motion.div>
@@ -243,7 +299,7 @@ export default function Home() {
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
             <span className="font-semibold text-zinc-400">PulseAI Fitness & Nutrition Platform</span>
           </div>
-          <div>Powered by Google Gemini Generative AI • LocalStorage Encrypted</div>
+          <div>All Data Safely Persisted to Local Storage • Zero Cloud Tracking</div>
         </div>
       </footer>
     </div>
