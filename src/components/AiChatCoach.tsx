@@ -36,11 +36,11 @@ How can I help you today? You can ask me for:
 ];
 
 const SUGGESTED_QUESTIONS = [
-  'What can I substitute for eggs in the morning?',
-  'How much protein should I eat per meal to maximize muscle synthesis?',
-  'Give me a 10-minute core workout I can do right now with zero equipment.',
-  'What should I eat 30 minutes before a heavy workout?',
-  'How do I stay in a calorie deficit without feeling hungry all day?',
+  'What can I eat instead of eggs for breakfast?',
+  'How much protein do I need each day?',
+  'Give me a quick 10-minute ab workout with no equipment.',
+  'What is a good snack to eat before exercising?',
+  'How can I lose fat without feeling hungry all day?',
 ];
 
 export const AiChatCoach: React.FC<AiChatCoachProps> = ({ profile, onOpenProfile }) => {
